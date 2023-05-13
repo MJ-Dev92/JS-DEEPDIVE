@@ -1,82 +1,161 @@
-# 24장 클로저
+# 20장 strict mode
+
+## 20.1 strict mode란?
+
+```jsx
+function foo() {
+  x = 10;
+}
+foo();
+
+console.log(x); // ?
+```
+
+- 전역 스코프에도 x 변수의 선언이 존재하지 않기 때문에 ReferenceError를 발생시킬 것 같지만 자바스크립트 엔진은 암묵적으로 전역 객체에 x 프로퍼티를 동적 생성한다.
+- 이때 전역 객체의 ㅌ 프로퍼티는 마치 전역 변수처럼 사용할 수 있다, 이러한 현상을 **암묵적 전역**이라한다.
+- 개발자의 의도와는 상관없이 발생한 암묵적 전역은 오류를 발생시키는 원인이 될 가능성이 크다. 따라서 반드시 var, let, const 키워드를 사용하여 변수를 선언한 다음 사용해야 한다.
+- ES5부터 strict mode(엄격모드)가 추가 되었다. stirct mode는 자바스크립트 언어의 문법을 좀 더 엄격히 적용하여 오류를 발생시킬 가능성이 높거나 자바스크립트 엔진의 최적화 작업에 문제를 일으킬 수 있는 코드에 대해 명시적인 에러를 발생시킨다.
+
+## 20.2 strict mode의 적용
+
+- strict mode를 적용하려면 전역의 선두 또는 함수 몸체의 선두에 ‘use strict’;를 추가한다. 전역 선두에 추가하면 스크립트 전체에 strict mode가 적용된다.
+
+```jsx
+"use strict";
+
+function foo() {
+  x = 10; // ReferenceError: x is not defined
+}
+```
+
+- 함수 몸체의 선두에 추가하면 해당 함수와 중첩 함수에 strict mode가 적용된다.
+
+```jsx
+function foo() {
+  "use strict";
+
+  x = 10; // ReferenceError: x is not defined
+}
+foo();
+```
+
+- 코드 선두에 ‘use strict’;를 위치시키지 않으면 strict mode가 제대로 동작하지 않는다.
+
+```jsx
+function foo() {
+  x = 10; // 에러를 발생시키지 않는다.
+  ("use strict");
+}
+
+foo();
+```
+
+## 20.3 전역에 strict mode를 적용하는 것은 피하자
+
+- 전역에 적용한 strict mode는 스크립트 단위로 적용 된다.
+- 하지만 strict mode 스크립트와 non-strict mode 스크립트를 혼용하는 것은 오류를 발생시킬 수 있다.
+- 이러한 경우 즉시 실행 함수로 스크립트 전체를 감싸서 스코프를 구분하고 즉시 실행 함수의 선두에 strict mode를 적용한다.
+
+```jsx
+// 즉시 실행 함수의 선두에 strict mode 적용
+(function () {
+  "use strict";
+
+  // Do something...
+})();
+```
+
+## 20.4 함수 단위로 struct mode를 적용하는 것도 피하자
 
 <aside>
-📌 클로저는 자바스크립트 고유의 개념이 아니다. 함수 일급 객체로 취급하는 함수형 프로그래밍 언어에서 사용되는 중요한 특성이다. 클로저는 함수와 그 함수가 선언된 렉시컬 환경과의 조합이다.
+📌 어떤 함수는 strict mode를 적용하고 어떤 함수는 strict mode를 적용하지 않는 것은 바람지하지 않으며 모든 함수에 일일이 strict mode를 적용하는 것은 번거로운 일이다. 그리고 strict mode가 적용된 함수가 참조할 함수 외부의 컨텍스트에 strict mode를 적용하지 않는다면 이 또한 문제가 발생할 수 있다.
 
 </aside>
 
 ```jsx
-const x = 1;
+(function () {
+  // non-strict mode
+  var let = 10; // 에러가 발생하지 않는다.
 
-function outerFunc() {
-  const x = 10;
-  function innerFunc() {
-    console.log(x); // 10
+  function foo() {
+    "use strict";
+
+    let = 20; // SyntaxError: inExpected strict mode reserved word
   }
-
-  innerFunc();
-}
-
-outerFunc();
+  foo();
+})();
 ```
 
-- 중첩 함수 innerFunc의 상위 스코프는 외부 함수 outerFunc의 스코프다. 따라서 중첩 함수 innerFunc 내부에서 자신을 포함하고 있는 외부 함수 outerFunc의 x 변수에 접근할 수 있다.
-- 만약 innerFunc 함수가 outerFunc 함수의 내부에서 정의된 중첩 함수가 아니라면 innerFunc 함수를 outerFunc 함수의 내부에서 호출한다 하더라도 outerFunc 함수의 변수에 접근할 수 없다.
-- 이 같은 현상이 발생하는 이유는 자바스크립트가 렉시컬 스코프를 따르는 프로그래밍 언어이기 떄문이다.
+- 따라서 strict mode는 즉시 실행 함수로 감싼 스크립트 단위로 적용하는 것이 바람직하다.
 
-## 24.1 렉시컬 스코프
+## 20.5 strict mode가 발생시키는 에러
 
-- **자바스크립트 엔진은 함수를 어디서 호출했는지가 아니라 함수를 어디에 정의했는지에 따라 상위 스코프를 결정한다. 이를 렉시컬 스코프(정적 스코프)라 한다.**
+- 다음은 strict mode를 적용했을 때 에러가 발생하는 대표적인 사례다.
+
+### 20.5.1 암묵적 전역
+
+<aside>
+📌 선언하지 않은 변수를 참조하면 ReferenceError가 발생한다.
+
+</aside>
 
 ```jsx
-const x = 1;
+(function () {
+  "use strict";
 
-function foo() {
-  const x = 10;
-  bar();
-}
-
-function bar() {
-  console.log(x);
-}
-
-foo(); // ?
-bar(); // ?
+  x = 1;
+  console.log(x); // ReferenceError: x is not defined
+})();
 ```
 
-- 함수의 상위 스코프는 함수를 어디서 정의했는냐에 따라 결정되므로 foo 함수와 bar함수의 상위 스코프는 전역이다.
-- 함수의 상위 스코프는 함수를 정의한 위치에 의해 정적으로 결정되고 변하지 않는다.
-- **렉시컬 환경의 “외부 렉시컬 환경에 대한 참조"에 저장할 참조값, 즉 상위 스코프에 대한 참조는 함수 정의가 평가되는 시점에 함수가 정의돤 환경에 의해 결정된다 이것이 바로 렉시컬 스코프다.**
+### 20.5.2 변수, 함수, 매개변수의 삭제
 
-  24.2 함수 객체의 내부 슬롯 [[Environment]]
+<aside>
+📌 delete연산자로 변수, 함수, 매개변수를 삭제하면 SyntaxError가 발생한다.
 
-- 렉시컬 스코프가 가능하려면 함수는 자신이 호출되는 환경과 상관없이 자신이 정의된환경 상위 스코프를 기억해야한다.
-- **함수는 자신의 내부 슬롯 [[Environment]]에 자신이 정의된 환경, 즉 상위 스코프의 참조를 저장한다.**
-- 전역에서 정의된 함수 선언문은 전역 코드가 평가되는 시점에 평가되어 함수 객체를 생헝한다.
-- 이때 생성된 함수 객체의 내부 슬롯 [[Environment]]에는 함수 정의가 평가되는 시점, 즉 전역 코드평가 시점에 실행중인 실행 컨텍스트의 렉시컬 환경인 전역 렉시컬 환경의 참조가 저장된다.
-- **따라서 함수 객체의 내부슬롯 [[Environment]]에 저장된 현재 실해중인 실행 컨텍스트의 렉시컬 환경의 참조가 바로 상위 스코프다. 또한 자신이 호출되었을 때 생성될 함수 렉시컬 환경의 외부 렉시컬 환경에 대한 참조에 저장될 참조값이다. 함수 객체는 내부슬롯 [[Environment]]에 저장한 렉시컬 환경의 참조, 즉 상위 스코프를 자신이 존재하는한 기억한다.**
+</aside>
 
-## 24.3 클로저와 렉시컬 환경
+### 20.5.3 매개변수 이름의 중복
+
+<aside>
+📌 중복된 매개변수 이름을 사용하면 SyntaxError가 발생한다.
+
+</aside>
+
+### 20.5.4 with 문의 사용
+
+<aside>
+📌 with문은 동일한 객체의 프로퍼티를 반복해서 사용할 때 객체 이름을 생략할 수 있어서 코드가 간단해지는 효과가 있지만 성는과 가독성이 나빠지는 문제가 있다. 따라서 with 문은 사용하지 않는 것이 좋다.
+
+</aside>
+
+## 20.6 strict mode 적용에 의한 변화
+
+### 20.6.1 일반 함수의 this
+
+<aside>
+📌 strict mode에서 함수를 일반 함수로서 호출하면 this에 undefined가 바인딩된다. 생성자 함수가 아닌 일반 함수 내부에서는 this를 사용할 필요가 없기 때문이다. 이때 에러는 발생하지 않는다.
+
+</aside>
 
 ```jsx
-const x = 1;
+(function () {
+  "use strinct";
+  function foo() {
+    console.log(this); // undefined
+  }
+  foo();
 
-// 1.
-function outer() {
-  const x = 10;
-  const inner = function () {
-    console.log(x);
-  }; // 2.
-  return inner;
-}
-
-// outer 함수를 호출하면 중첩 함수 inner를 반환한다.
-// 그리고 outer 함수의 실행 컨텍스틑는 실행 컨텍스트 스택에서 팝되어 제거된다.
-const innerFunc = outer(); // 3.
-innerFunc(); // 4. 10
+  function Foo() {
+    console.log(this); // Foo
+  }
+  new Foo();
+})();
 ```
 
-- 함수 3. 을 호출하면 inner를 반환하고 생명주기를 마감한다. 이때 outer 함수의 실행 컨텍스트는 스택에서 제거된다.
-- 지역 변수 값 10 또한 생명주기를 마감한다. 따라서 outer함수의 지역변수 x는 더는 유효하지 않는다.
-- 함수 4.의 x 변수 값은 10이다. 이미 생명 주기가 종료되어 실행컨텍스트 스택에서 제거된 outer 함수의 지역변수 x가 다시 부활한듯 동작하고 있다.
-- 이처럼 외부 함수보다 중첩 함수가 더 오래 유지되는 경우 중첩 함수는 이미 생명주기가 종료한 외부 함수의 변수를 참조할 수 있다. 이러한 중첩 함수를 클로저라고 부른다.
+### 20.6.2 arguments 객체
+
+<aside>
+📌 strict mode에서는 매개변수에 전달된 인수를 재할당하여 변경해도 arguments 객체에 반영되지 않는다.
+
+</aside>
