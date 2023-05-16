@@ -1,161 +1,176 @@
-# 20장 strict mode
+# 18장 일급 객체
 
-## 20.1 strict mode란?
+## 18.1 일급객체
+
+다음과 같은 조건을 만족하는 객체를 일급 객체라 한다.
+
+- 무명의 리터럴로 생성할 수 있다. 즉, 런타임에 생성이 가능하다.
+- 변수나 자료구조(객체, 배열 등)에 저장할 수 있다.
+- 함수의 매개변수에 전달할 수 있다.
+- 함수의 반환값으로 사용할 수 있다.
+
+자바스크립트의 함수는 다음 예제와 같이 위의 조건을 모두 만족하므로 일급 객체다.
+
+- 객체는 값이므로 함수는 값과 동일하게 취급할 수 있다 함수는 값을 사용할 수 있는 곳(변수 할당문, 객체의 프로퍼티 값, 배열의 요소, 함수 호출의 인수, 함수 반환문)이라면 어디서든지 리터럴로 정의할 수 있으며 런타임에 함수객체로 평가된다.
+- 일급 객체로서 함수가 가지는 가장 큰 특징은 일반 객체와 같이 함수의 매개변수에 전달할 수 있으며 함수의 반환값으로 사용할 수도 있다는 것이다. 이는 함수형 프로그래밍을 가능케 하는 자바스클비트의 장점 중 하나다.
+- 함수는 객체이지만 일반 객체와는 차이가 있다. 일반 객체는 호출할 수 없지만 함수 객체는 호출할 수 있다.
+- 함수 객체는 일반 객체에는 없는 함수 고유의 프로퍼티를 소유한다.
+
+## 18.2 함수 객체의 프로퍼티
+
+<aside>
+📌 함수는 객체다 따라서 함수도 프로퍼티를 가질 수 있다.
+
+</aside>
+
+```jsx
+function square(number) {
+  return number * number;
+}
+
+console.log(Object.getOwnPropertyDescriptors(square));
+/*
+{
+	length : {value: 1, writable: false, enumerable: false, configurable: true},
+	name : {value: "square", writable: false, enumerable: false, configurable: true},
+	arguments : {value: null, writable: false, enumerable: false, configurable: false},
+	caller : {value: null, writable: false, enumerable: false, configurable: false},
+	prototype : {value: {...}, writable: true, enumerable: false, configurable: false},
+}
+*/
+
+// __proto__는 square 함수의 프로퍼티가 아니다.
+console.log(Object.getOwnPropertyDescriptor(square, "__proto__")); // undefined
+
+// __proto__는 Object.prototype 객체의 접근자 프로퍼티다.
+// square 함수는 Object.prototype 객체로부터 __proto__ 접근자 프로퍼티를 상속받는다.
+console.log(Object.getOwnPropertyDescriptor(object.prototype, "__proto__"));
+// {get: f, set: f, enumerable: false, configurable: true}
+```
+
+- arguments, caller, length, name, prototype 프로퍼티는 일반 객체에는 없는 함수 객체 고유의 프로퍼티다.
+- Object.prototype 객체의 프로퍼티는 모든 객체가 상속받아 사용할 수 있다.
+- 즉 Object.prototype 객체의 **proto** 접근자 프로퍼티는 모든 객체가 사용할 수 있다.
+
+### 18.2.1 arguments 프로퍼티
+
+<aside>
+📌 함수 객체의 arguments프로퍼티 값은 arguments 객체다. arguments 객체는 함수 호출 시 전달된 인수들의 정보를 담고 있는순회가능한 유사배열 객체이며, 함수 내부에서 지역변수처럼 사용된다. 즉 함수 외부에서는 참조할수 없다.
+
+</aside>
+
+- 자바스크립트는 함수의 매개변수와 인수의 개수가 일치하는지 확인하지 않는다. 따라서 함수 호출 시 매개변수 개수만큼 인수를 전달하지 않아도 에러가 발생하지 않는다.
+
+```jsx
+function multiply(x, y) {
+  console.log(arguments);
+  return x * y;
+}
+
+console.log(multiply()); // NaN
+console.log(multiply(1)); // NaN
+console.log(multiply(1, 2)); //2
+console.log(multiply(1, 2, 3)); //2
+```
+
+- 함수가 호출되면 함수 몸체 내에서 암묵적으로 매개변수가 선언되고 undefined로 초기화된 이후 인수가 할당된다.
+- 선언된 매개변수의 개수보다 인수를 적게 전달했을 경우 인수가 전달되지 않은 매개변수는 undefined로 초기화된 상태를 유지한다. 매개변수의 개수보다 인수를 더 많이 전달한 경우 초과된 인수는 무시된다.
+- arguments 객체는 매개변수 개수를 확정할 수 없는 **가변 인자 함수**를 구현할 때 유용하다.
+- arguments 객체는 배열 형태로 인자 정보를 담고 있지만 실제 배열이 아닌 유사배열 객체다.
+- 유사 배열 객체란 length 프로퍼티를 가진 객체로 for 문으로 순회할 수 있는 객체를 말한다.
+- 유사 배열 객체는 배열이 아니므로 배열 메서들르 사용할 경우 에러가 발생한다.
+
+```jsx
+function sum() {
+  // arguments 객체를 배열로 변환
+  const array = Array.prototype.slice.call(arguments);
+  return array.reduce(function (pre, cur) {
+    return pre + cur;
+  }, 0);
+}
+
+console.log(sum(1, 2)); // 3
+console.log(sum(1, 2, 3, 4, 5)); // 15
+```
+
+- 이러한 번거로움을 해결하기 위해 ES6에서는 Rest파라미터를 도입했다.
+
+```jsx
+// ES6 Rest parameter
+function sum(...args) {
+  return args.reduce((pre, cur) => pre + cur, 0);
+}
+
+console.log(sum(1, 2)); // 3
+console.log(sum(1, 2, 3, 4, 5)); // 15
+```
+
+### 18.2.3 length 프로퍼티
+
+함수 객체의 length 프로퍼티는 함수를 정의할 때 선언한 매개변서의 개수를 가리킨다.
 
 ```jsx
 function foo() {
-  x = 10;
-}
-foo();
-
-console.log(x); // ?
-```
-
-- 전역 스코프에도 x 변수의 선언이 존재하지 않기 때문에 ReferenceError를 발생시킬 것 같지만 자바스크립트 엔진은 암묵적으로 전역 객체에 x 프로퍼티를 동적 생성한다.
-- 이때 전역 객체의 ㅌ 프로퍼티는 마치 전역 변수처럼 사용할 수 있다, 이러한 현상을 **암묵적 전역**이라한다.
-- 개발자의 의도와는 상관없이 발생한 암묵적 전역은 오류를 발생시키는 원인이 될 가능성이 크다. 따라서 반드시 var, let, const 키워드를 사용하여 변수를 선언한 다음 사용해야 한다.
-- ES5부터 strict mode(엄격모드)가 추가 되었다. stirct mode는 자바스크립트 언어의 문법을 좀 더 엄격히 적용하여 오류를 발생시킬 가능성이 높거나 자바스크립트 엔진의 최적화 작업에 문제를 일으킬 수 있는 코드에 대해 명시적인 에러를 발생시킨다.
-
-## 20.2 strict mode의 적용
-
-- strict mode를 적용하려면 전역의 선두 또는 함수 몸체의 선두에 ‘use strict’;를 추가한다. 전역 선두에 추가하면 스크립트 전체에 strict mode가 적용된다.
-
-```jsx
-"use strict";
-
-function foo() {
-  x = 10; // ReferenceError: x is not defined
-}
-```
-
-- 함수 몸체의 선두에 추가하면 해당 함수와 중첩 함수에 strict mode가 적용된다.
-
-```jsx
-function foo() {
-  "use strict";
-
-  x = 10; // ReferenceError: x is not defined
-}
-foo();
-```
-
-- 코드 선두에 ‘use strict’;를 위치시키지 않으면 strict mode가 제대로 동작하지 않는다.
-
-```jsx
-function foo() {
-  x = 10; // 에러를 발생시키지 않는다.
-  ("use strict");
+  console.log(foo.length); // 0
 }
 
-foo();
+function bar(x) {
+  return x;
+}
+
+console.log(bar.length); // 1
+
+function baz(x, y) {
+  return x * y;
+}
+
+console.log(baz.length); // 2
 ```
 
-## 20.3 전역에 strict mode를 적용하는 것은 피하자
+- arguments 객체의 length 프로퍼티는 인자의 개수를 가리키고, 함수 객체의 length 프로퍼티는 매개변수 의 개수를 가리킨다.
 
-- 전역에 적용한 strict mode는 스크립트 단위로 적용 된다.
-- 하지만 strict mode 스크립트와 non-strict mode 스크립트를 혼용하는 것은 오류를 발생시킬 수 있다.
-- 이러한 경우 즉시 실행 함수로 스크립트 전체를 감싸서 스코프를 구분하고 즉시 실행 함수의 선두에 strict mode를 적용한다.
+### 18.2.4 name 프로퍼티
+
+- name 프로퍼티는 ES5와 ES6에서 동작을 달리하므로 주의하기 바란다. 익명 함수 표현식의 경우 ES5에서 name 프로퍼티는 빈 문자열을 값으로 갖는다. 하지만 ES6에서는 함수 객체를 가리키는 식별자를 값으로 갖는다.
 
 ```jsx
-// 즉시 실행 함수의 선두에 strict mode 적용
-(function () {
-  "use strict";
+// 기명 함수 표현식
+var namedFunc = function foo() {};
+console.log(namedFunc.name); // foo
 
-  // Do something...
-})();
+// 익명 함수 표현식
+var anonymousFunc = function () {};
+// ES5 : name 프로퍼티는 빈 문자열을 값으로 갖는다.
+// ES6 : name 프로퍼티는 함수 객체를 가리키는 변수 이름을 값으로 갖는다.
+console.log(anonymousFunc.name); // anonymousFunc
+
+// 함수 선언문 (Function declaration)
+function bar() {}
+console.log(bar.name); // bar
 ```
 
-## 20.4 함수 단위로 struct mode를 적용하는 것도 피하자
+- 12.4.1절 ‘함수 선언문’에서 살펴본 바와 같이 함수 이름과 함수 객체를 가리키는 식별자는 의미가 다르다는 것을 잊지 말기 바란다. 함수를 호출할 떄는 함수 이름이 아닌 함수 객체를 가리키는 식별자로 호출한다.
+
+### 18.2.5 **proto** 접근자 프로퍼티
+
+- **proto**프로퍼티는 [[Prototype]] 내부 슬롯이 가리키는 프로토타입 객체에 접근하기 위해 사용하는 접근자 프로퍼티다. 내부슬롯에는 직접 접근할 수 없고 간접적인 접근 방법을 제공하는 경우에 한하여 접근할 수 있다.
+- 자세한 내용은 19장에서 알아보자
+
+### 18.2.6 prototype 프로퍼티
 
 <aside>
-📌 어떤 함수는 strict mode를 적용하고 어떤 함수는 strict mode를 적용하지 않는 것은 바람지하지 않으며 모든 함수에 일일이 strict mode를 적용하는 것은 번거로운 일이다. 그리고 strict mode가 적용된 함수가 참조할 함수 외부의 컨텍스트에 strict mode를 적용하지 않는다면 이 또한 문제가 발생할 수 있다.
+📌 prototpye 프로퍼티는 생성자 함수로 호출할 수 있는 함수 객체, 즉 constructor만이 소유하는 프로터다.
 
 </aside>
+
+- 일반객체와 생성자 함수로 호출할 수 없는 non-constructor에는 prototpye프로퍼티가 없다.
 
 ```jsx
-(function () {
-  // non-strict mode
-  var let = 10; // 에러가 발생하지 않는다.
+// 함수 객체는 prototype 프로퍼티를 소유한다.
+(function () {}).hasOwnProperty("prototype"); // true
 
-  function foo() {
-    "use strict";
-
-    let = 20; // SyntaxError: inExpected strict mode reserved word
-  }
-  foo();
-})();
+// 일반 객체는 prototype 프로퍼티를 소유하지 않는다.
+({}).hasOwnProperty("prototype"); // false
 ```
 
-- 따라서 strict mode는 즉시 실행 함수로 감싼 스크립트 단위로 적용하는 것이 바람직하다.
-
-## 20.5 strict mode가 발생시키는 에러
-
-- 다음은 strict mode를 적용했을 때 에러가 발생하는 대표적인 사례다.
-
-### 20.5.1 암묵적 전역
-
-<aside>
-📌 선언하지 않은 변수를 참조하면 ReferenceError가 발생한다.
-
-</aside>
-
-```jsx
-(function () {
-  "use strict";
-
-  x = 1;
-  console.log(x); // ReferenceError: x is not defined
-})();
-```
-
-### 20.5.2 변수, 함수, 매개변수의 삭제
-
-<aside>
-📌 delete연산자로 변수, 함수, 매개변수를 삭제하면 SyntaxError가 발생한다.
-
-</aside>
-
-### 20.5.3 매개변수 이름의 중복
-
-<aside>
-📌 중복된 매개변수 이름을 사용하면 SyntaxError가 발생한다.
-
-</aside>
-
-### 20.5.4 with 문의 사용
-
-<aside>
-📌 with문은 동일한 객체의 프로퍼티를 반복해서 사용할 때 객체 이름을 생략할 수 있어서 코드가 간단해지는 효과가 있지만 성는과 가독성이 나빠지는 문제가 있다. 따라서 with 문은 사용하지 않는 것이 좋다.
-
-</aside>
-
-## 20.6 strict mode 적용에 의한 변화
-
-### 20.6.1 일반 함수의 this
-
-<aside>
-📌 strict mode에서 함수를 일반 함수로서 호출하면 this에 undefined가 바인딩된다. 생성자 함수가 아닌 일반 함수 내부에서는 this를 사용할 필요가 없기 때문이다. 이때 에러는 발생하지 않는다.
-
-</aside>
-
-```jsx
-(function () {
-  "use strinct";
-  function foo() {
-    console.log(this); // undefined
-  }
-  foo();
-
-  function Foo() {
-    console.log(this); // Foo
-  }
-  new Foo();
-})();
-```
-
-### 20.6.2 arguments 객체
-
-<aside>
-📌 strict mode에서는 매개변수에 전달된 인수를 재할당하여 변경해도 arguments 객체에 반영되지 않는다.
-
-</aside>
+- prototype 프로퍼티는 함수가 객체를 생성하는 생성자 함수로 호출될 때 생성자 함수가 생성할 인스턴스의 프로토 타입 객체를 가리킨다.
