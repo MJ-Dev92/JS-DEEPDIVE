@@ -1,176 +1,185 @@
-# 18장 일급 객체
+# 25장 클래스
 
-## 18.1 일급객체
+## 25.1 클래스는 프로토타입의 문법적 설탕인가?
 
-다음과 같은 조건을 만족하는 객체를 일급 객체라 한다.
+- 자바스크립트는 프로토타입 기반 객체지향 언어다. 비록 다른 객체 지향 언어와의 차이점에 대한 논쟁이 있긴 하지만 자바스크립트는 강력한 객체지향 프로그래밍 능력을 지니고 있다.
+- 프로토타입 기반 객체지향 언어는 클래스가 필요 없는 객체지향 프로그래밍 언어다 ES5에서는 클래스 없이도 생성자 함수와 프로토타입을 통해 객체지향 언어의 상속을 구현할 수 있다.
+- 클래스는 함수이며 기존 프로토타입 기반 패턴을 클래스 기반 패턴처럼 사용할 수 있도록 하는 문법적 설탕이라고 볼 수도 있다.
+- 클래스와 생성자 함수 차이점이 몇 가지가 있다.
+  1. 클래스를 new 연선자 없이 호출하면 에러가 발생한다. 하지만 생성자 함수는 new 연산자 없이 호출하면 일반 함수로서 호출된다.
+  2. 클래스는 상속을 지원하는 extends와 super 키우ㅗ드를 제공한다. 하지만 생성자 함수는 extends와 super키워드를 지원하지 않는다.
+  3. 클래스는 호이스팅이 발생하지 않는 것처럼 동작한다. 하지만 함수 선언문으로 정의된 생성자 함수는 함수 호이스팅이, 함수 표현식으로 정의한 생성자 함수는 변수 호이스팅이 발생한다.
+  4. 클래스 내의 모든 코드에는 암무적으로 strict mode가 지정되어 실행되며 strict mode를 해제할 수 없다 하지만 생성자 함순느 암묵적으로 strict mode가 지정되지 않는다.
+  5. 클래스의 constructor, 프로토타입 메서드 정적 메서드는 모두 프로퍼티 어트리뷰트 [[Enumerable]]의 값이 false다. 다시말해 열거되지 않는다.
+- 클래스는 생성자 함수 기반의 객체 생성 방식보다 견고하고 명료하다. 따라서 클래스를 프로토타입 기반 객체생성 패턴의 단순한 문법적 설탕이라고 보기보다는 새로운 객체 생성 메커니즘으로 보는 것이 좀더 합당하다.
 
-- 무명의 리터럴로 생성할 수 있다. 즉, 런타임에 생성이 가능하다.
-- 변수나 자료구조(객체, 배열 등)에 저장할 수 있다.
-- 함수의 매개변수에 전달할 수 있다.
-- 함수의 반환값으로 사용할 수 있다.
-
-자바스크립트의 함수는 다음 예제와 같이 위의 조건을 모두 만족하므로 일급 객체다.
-
-- 객체는 값이므로 함수는 값과 동일하게 취급할 수 있다 함수는 값을 사용할 수 있는 곳(변수 할당문, 객체의 프로퍼티 값, 배열의 요소, 함수 호출의 인수, 함수 반환문)이라면 어디서든지 리터럴로 정의할 수 있으며 런타임에 함수객체로 평가된다.
-- 일급 객체로서 함수가 가지는 가장 큰 특징은 일반 객체와 같이 함수의 매개변수에 전달할 수 있으며 함수의 반환값으로 사용할 수도 있다는 것이다. 이는 함수형 프로그래밍을 가능케 하는 자바스클비트의 장점 중 하나다.
-- 함수는 객체이지만 일반 객체와는 차이가 있다. 일반 객체는 호출할 수 없지만 함수 객체는 호출할 수 있다.
-- 함수 객체는 일반 객체에는 없는 함수 고유의 프로퍼티를 소유한다.
-
-## 18.2 함수 객체의 프로퍼티
+## 25.2 클래싀 정의
 
 <aside>
-📌 함수는 객체다 따라서 함수도 프로퍼티를 가질 수 있다.
-
+📌 클래스는 class키워드를 사용하여 정의한다. 클래스 이름은 생성자 함수와 마찬가지로 파스칼 케이스를 사용하는 것이 일반적이다. 파스칼 케이스를 사용하지 않아도 에러가 발생하지 않는다.
 </aside>
 
 ```jsx
-function square(number) {
-  return number * number;
+// 클래스 선언문
+class Person {}
+```
+
+- 클래스는 함수와 마찬가지로 이름을 가질 수도 있고, 갖지 않을 수도 있다.
+
+```jsx
+// 익명 클래스 표현식
+const Person = class {};
+
+// 기명 클래스 표현식
+const Person = class MyClass {};
+```
+
+- 클래스는 일급 객체로서 다음과 같은 특직을 갖는다
+  - 무명의 리터럴로 생성할 수 있다. 즉, 런타임에 생성이 가능하다.
+  - 변수난 자료구조에 저장할 수 있다.
+  - 함수의 매개변수에게 전달할 수 있다.
+  - 함수의 반환값으로 사용할 수 있다.
+- 클래스 몸체에는 0개 이상의 메서드만 정의할 수 있다. 클래스 몸체에서 정의할 수 있는 메서드는 constructor(생성자), 프로토타입 메서드, 정적 메서드의 세가지가 있다.
+
+```jsx
+// 클래스 선언문
+class Person {
+  // 생성자
+  constructor(name) {
+    // 인스턴스 생성 및 초기화
+    this.name = name; // name 프로퍼티는 public하다.
+  }
+
+  // 프로토타입 메서드
+  sayHi() {
+    console.log(`Hi! My name is ${this.name}`);
+  }
+
+  // 정적 메서드
+  static sayHello() {
+    console.log("Hello");
+  }
 }
 
-console.log(Object.getOwnPropertyDescriptors(square));
-/*
+// 인스턴스 생성
+const me = new Person("Lee");
+
+// 인스턴스의 프로퍼티 참조
+console.log(me.naem); // Lee
+// 프로토타입 메서드 호출
+me.sayHi(); // Hi! My name is Lee
+// 정적 메서드 호출
+Person.sayHello(); // Hello!
+```
+
+## 25.3 클래스 호이스팅
+
+```jsx
+// 클래스 선언문
+class Person {}
+
+console.log(typeof Person); // function
+```
+
+- 클래스 선언문으로 정의한 클래스는 함수 선언문과 같이 소스코드 평가 과정, 즉 런타임 이전에 먼저 평가되어 함수 객체를 생성한다. 이때 클래스가 평가되어 생성된 함수 객체는 생성자 함수로서 호출할 수 있는 함수 즉 constructor다. 생성자 함수로서 호출할 수 있는 함수는 함수 정의가 평가되어 함수 객체를 생성하는 시점에 프로토타입도 더불처 생성된다.
+
+```jsx
+console.log(Person);
+// ReferenceError
+
+// 클래스 선언문
+class Person {}
+```
+
+- 클래스 선언문은 마치 호이스팅이 발생하지 않는 것처럼 보이나 그렇지 않다.
+
+```jsx
+const Person = "";
+
 {
-	length : {value: 1, writable: false, enumerable: false, configurable: true},
-	name : {value: "square", writable: false, enumerable: false, configurable: true},
-	arguments : {value: null, writable: false, enumerable: false, configurable: false},
-	caller : {value: null, writable: false, enumerable: false, configurable: false},
-	prototype : {value: {...}, writable: true, enumerable: false, configurable: false},
+  // 호이스팅이 발생하지 않는다면 ''이 호출되어야 한다.
+  console.log(Person);
+  // ReferenceError: Canot access 'Person' before initialization
+
+  // 클래스 선언문
+  class Person {}
 }
-*/
-
-// __proto__는 square 함수의 프로퍼티가 아니다.
-console.log(Object.getOwnPropertyDescriptor(square, "__proto__")); // undefined
-
-// __proto__는 Object.prototype 객체의 접근자 프로퍼티다.
-// square 함수는 Object.prototype 객체로부터 __proto__ 접근자 프로퍼티를 상속받는다.
-console.log(Object.getOwnPropertyDescriptor(object.prototype, "__proto__"));
-// {get: f, set: f, enumerable: false, configurable: true}
 ```
 
-- arguments, caller, length, name, prototype 프로퍼티는 일반 객체에는 없는 함수 객체 고유의 프로퍼티다.
-- Object.prototype 객체의 프로퍼티는 모든 객체가 상속받아 사용할 수 있다.
-- 즉 Object.prototype 객체의 **proto** 접근자 프로퍼티는 모든 객체가 사용할 수 있다.
+- 클래스 선언문도 변수 선언, 함수 정의와 마찬가지로 호이스팅이 발생한다. 단 클래스는 let, const 키워드로 선언한 변수처럼 호이스팅이된다. 따라서 클래스 선언문 이전에 일시적 사각지대에 빠지기 떄문에 호이스팅이 발생하지 않는 것처럼 동작한다.
 
-### 18.2.1 arguments 프로퍼티
+## 25.4 인스턴스 생성
 
 <aside>
-📌 함수 객체의 arguments프로퍼티 값은 arguments 객체다. arguments 객체는 함수 호출 시 전달된 인수들의 정보를 담고 있는순회가능한 유사배열 객체이며, 함수 내부에서 지역변수처럼 사용된다. 즉 함수 외부에서는 참조할수 없다.
+📌 클래스는 생성자 함수이며 new 연산자와 함꼐 호출되어 인스턴스를 생성한다.
 
 </aside>
 
-- 자바스크립트는 함수의 매개변수와 인수의 개수가 일치하는지 확인하지 않는다. 따라서 함수 호출 시 매개변수 개수만큼 인수를 전달하지 않아도 에러가 발생하지 않는다.
-
 ```jsx
-function multiply(x, y) {
-  console.log(arguments);
-  return x * y;
-}
+class Person {}
 
-console.log(multiply()); // NaN
-console.log(multiply(1)); // NaN
-console.log(multiply(1, 2)); //2
-console.log(multiply(1, 2, 3)); //2
+// 인스턴스 생성
+const me = new Person();
+console.log(me); // Person {}
 ```
 
-- 함수가 호출되면 함수 몸체 내에서 암묵적으로 매개변수가 선언되고 undefined로 초기화된 이후 인수가 할당된다.
-- 선언된 매개변수의 개수보다 인수를 적게 전달했을 경우 인수가 전달되지 않은 매개변수는 undefined로 초기화된 상태를 유지한다. 매개변수의 개수보다 인수를 더 많이 전달한 경우 초과된 인수는 무시된다.
-- arguments 객체는 매개변수 개수를 확정할 수 없는 **가변 인자 함수**를 구현할 때 유용하다.
-- arguments 객체는 배열 형태로 인자 정보를 담고 있지만 실제 배열이 아닌 유사배열 객체다.
-- 유사 배열 객체란 length 프로퍼티를 가진 객체로 for 문으로 순회할 수 있는 객체를 말한다.
-- 유사 배열 객체는 배열이 아니므로 배열 메서들르 사용할 경우 에러가 발생한다.
+- 함수는 new 연산자의 사용 여부에 따라 일반함수로 호출되거나 인스턴스 생성을 위한 생성자 함수로 호출되지만 클래스는 인스턴스를 생성하는 것이 유일한 존재 이유이므로 반드시 new연산자와 함께 호출해야 한다.
 
 ```jsx
-function sum() {
-  // arguments 객체를 배열로 변환
-  const array = Array.prototype.slice.call(arguments);
-  return array.reduce(function (pre, cur) {
-    return pre + cur;
-  }, 0);
-}
+class Person {}
 
-console.log(sum(1, 2)); // 3
-console.log(sum(1, 2, 3, 4, 5)); // 15
+// 클래스를 new 연산자 없이 호출하면 타입 에러가 발생한다.
+const me = Person();
+// TypeError
 ```
 
-- 이러한 번거로움을 해결하기 위해 ES6에서는 Rest파라미터를 도입했다.
-
-```jsx
-// ES6 Rest parameter
-function sum(...args) {
-  return args.reduce((pre, cur) => pre + cur, 0);
-}
-
-console.log(sum(1, 2)); // 3
-console.log(sum(1, 2, 3, 4, 5)); // 15
-```
-
-### 18.2.3 length 프로퍼티
-
-함수 객체의 length 프로퍼티는 함수를 정의할 때 선언한 매개변서의 개수를 가리킨다.
-
-```jsx
-function foo() {
-  console.log(foo.length); // 0
-}
-
-function bar(x) {
-  return x;
-}
-
-console.log(bar.length); // 1
-
-function baz(x, y) {
-  return x * y;
-}
-
-console.log(baz.length); // 2
-```
-
-- arguments 객체의 length 프로퍼티는 인자의 개수를 가리키고, 함수 객체의 length 프로퍼티는 매개변수 의 개수를 가리킨다.
-
-### 18.2.4 name 프로퍼티
-
-- name 프로퍼티는 ES5와 ES6에서 동작을 달리하므로 주의하기 바란다. 익명 함수 표현식의 경우 ES5에서 name 프로퍼티는 빈 문자열을 값으로 갖는다. 하지만 ES6에서는 함수 객체를 가리키는 식별자를 값으로 갖는다.
-
-```jsx
-// 기명 함수 표현식
-var namedFunc = function foo() {};
-console.log(namedFunc.name); // foo
-
-// 익명 함수 표현식
-var anonymousFunc = function () {};
-// ES5 : name 프로퍼티는 빈 문자열을 값으로 갖는다.
-// ES6 : name 프로퍼티는 함수 객체를 가리키는 변수 이름을 값으로 갖는다.
-console.log(anonymousFunc.name); // anonymousFunc
-
-// 함수 선언문 (Function declaration)
-function bar() {}
-console.log(bar.name); // bar
-```
-
-- 12.4.1절 ‘함수 선언문’에서 살펴본 바와 같이 함수 이름과 함수 객체를 가리키는 식별자는 의미가 다르다는 것을 잊지 말기 바란다. 함수를 호출할 떄는 함수 이름이 아닌 함수 객체를 가리키는 식별자로 호출한다.
-
-### 18.2.5 **proto** 접근자 프로퍼티
-
-- **proto**프로퍼티는 [[Prototype]] 내부 슬롯이 가리키는 프로토타입 객체에 접근하기 위해 사용하는 접근자 프로퍼티다. 내부슬롯에는 직접 접근할 수 없고 간접적인 접근 방법을 제공하는 경우에 한하여 접근할 수 있다.
-- 자세한 내용은 19장에서 알아보자
-
-### 18.2.6 prototype 프로퍼티
+## 25.5 메서드
 
 <aside>
-📌 prototpye 프로퍼티는 생성자 함수로 호출할 수 있는 함수 객체, 즉 constructor만이 소유하는 프로터다.
+📌 클래스 몸체에는 0개 이상의 메서드만 선언할 수 있다. 클래스 몸체에서 정의할 수 있는 메서드는 constructor(생성자), 프로토타입 메서드, 정적 메서드의 세 가지가 있다.
 
 </aside>
 
-- 일반객체와 생성자 함수로 호출할 수 없는 non-constructor에는 prototpye프로퍼티가 없다.
+### 25.5.1 constructor
+
+<aside>
+📌 constructor는 인스턴스를 생성하고 초기화하기 위한 특수한 메서드다. constructor는 이름을 변경할 수 없다.
+
+</aside>
 
 ```jsx
-// 함수 객체는 prototype 프로퍼티를 소유한다.
-(function () {}).hasOwnProperty("prototype"); // true
-
-// 일반 객체는 prototype 프로퍼티를 소유하지 않는다.
-({}).hasOwnProperty("prototype"); // false
+class Person {
+  // 생성자
+  constructor(name) {
+    // 인스턴스 생성 및 초기화
+    this.name = name;
+  }
+}
 ```
 
-- prototype 프로퍼티는 함수가 객체를 생성하는 생성자 함수로 호출될 때 생성자 함수가 생성할 인스턴스의 프로토 타입 객체를 가리킨다.
+- 클래스는 인스턴스를 생성하기 위한 생성자 함수다. 클래스의 내부를 들여다보자
+- 클래스는 평가되어 함수 객체가 된다. 함수와 동일하게 프로토타입과 연결되어 있으며 자신의 스코프체인을 구성한다.
+- 모든 함수 객체가 가지고 있는 prototype 프로퍼티가 가리키는 프로토타입 객체의 constructor 프로퍼티는 클래스 자신을 가리키고 있다. 이는 클래스가 인스턴스를 생성하는 생성자 함수라는 것을 의미한다.
+
+```jsx
+// 클래스
+class Person {
+  // 생성자
+  constructor(name) {
+    // 인스턴스 생성 및 초기화
+    this.name = name;
+  }
+}
+
+// 생성자 함수
+function Person(name) {
+  // 인스턴스 생성 및 초기화
+  this.name = name;
+}
+```
+
+- 클래스가 생성한 인스턴스 어디에도 constructor 메서드가 보이지 않는다. 이는 클래스 몸체에 정의한 constructor가 단순한 메서드가 아니라는 것을 의미한다.
+- constructor는 메서드로 해석되는 것이 아니라 클래스가 평가되어 생성한 함수 객체 코드의 일부가 된다. 다시말해 클래스 정의가 평가되면 construcotr의 기술된 동작을 하는 함수 객체가 생성된다.
+- constructor는 생성자 함수와 유사하지만 몇 가지 차이가 있다.
+- constructor는 클래스 내에 최대 한 개만 존재할 수 있다. 만약 클래스가 2개 이상의 constructor를 포함하면 문법 에러가 발생한다.
+  ㄴ
