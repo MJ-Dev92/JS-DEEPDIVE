@@ -1,185 +1,252 @@
-# 25장 클래스
+# 22장 this
 
-## 25.1 클래스는 프로토타입의 문법적 설탕인가?
-
-- 자바스크립트는 프로토타입 기반 객체지향 언어다. 비록 다른 객체 지향 언어와의 차이점에 대한 논쟁이 있긴 하지만 자바스크립트는 강력한 객체지향 프로그래밍 능력을 지니고 있다.
-- 프로토타입 기반 객체지향 언어는 클래스가 필요 없는 객체지향 프로그래밍 언어다 ES5에서는 클래스 없이도 생성자 함수와 프로토타입을 통해 객체지향 언어의 상속을 구현할 수 있다.
-- 클래스는 함수이며 기존 프로토타입 기반 패턴을 클래스 기반 패턴처럼 사용할 수 있도록 하는 문법적 설탕이라고 볼 수도 있다.
-- 클래스와 생성자 함수 차이점이 몇 가지가 있다.
-  1. 클래스를 new 연선자 없이 호출하면 에러가 발생한다. 하지만 생성자 함수는 new 연산자 없이 호출하면 일반 함수로서 호출된다.
-  2. 클래스는 상속을 지원하는 extends와 super 키우ㅗ드를 제공한다. 하지만 생성자 함수는 extends와 super키워드를 지원하지 않는다.
-  3. 클래스는 호이스팅이 발생하지 않는 것처럼 동작한다. 하지만 함수 선언문으로 정의된 생성자 함수는 함수 호이스팅이, 함수 표현식으로 정의한 생성자 함수는 변수 호이스팅이 발생한다.
-  4. 클래스 내의 모든 코드에는 암무적으로 strict mode가 지정되어 실행되며 strict mode를 해제할 수 없다 하지만 생성자 함순느 암묵적으로 strict mode가 지정되지 않는다.
-  5. 클래스의 constructor, 프로토타입 메서드 정적 메서드는 모두 프로퍼티 어트리뷰트 [[Enumerable]]의 값이 false다. 다시말해 열거되지 않는다.
-- 클래스는 생성자 함수 기반의 객체 생성 방식보다 견고하고 명료하다. 따라서 클래스를 프로토타입 기반 객체생성 패턴의 단순한 문법적 설탕이라고 보기보다는 새로운 객체 생성 메커니즘으로 보는 것이 좀더 합당하다.
-
-## 25.2 클래싀 정의
+## 22.1 this 키워드
 
 <aside>
-📌 클래스는 class키워드를 사용하여 정의한다. 클래스 이름은 생성자 함수와 마찬가지로 파스칼 케이스를 사용하는 것이 일반적이다. 파스칼 케이스를 사용하지 않아도 에러가 발생하지 않는다.
+📌 동작을 나타내는 메서드는 자신이 속한 객체의 상태, 즉 프로퍼티를 참조하고 변경할 수 있어야 한다. 이때 메서드가 자신이 속한 객체의 프로퍼티를 참조하려면 먼저 **자신이 속한 객체를 가리키는 식별자를 참조할 수 있어야한다.**
+
 </aside>
 
-```jsx
-// 클래스 선언문
-class Person {}
-```
-
-- 클래스는 함수와 마찬가지로 이름을 가질 수도 있고, 갖지 않을 수도 있다.
+- 객체 리터럴 방식으로 생성한 객체의 경우 메서드 내부에서 메서드 자신이 속한 객체를 가리키는 식별자를 재귀적으로 참조할 수있다.
 
 ```jsx
-// 익명 클래스 표현식
-const Person = class {};
-
-// 기명 클래스 표현식
-const Person = class MyClass {};
-```
-
-- 클래스는 일급 객체로서 다음과 같은 특직을 갖는다
-  - 무명의 리터럴로 생성할 수 있다. 즉, 런타임에 생성이 가능하다.
-  - 변수난 자료구조에 저장할 수 있다.
-  - 함수의 매개변수에게 전달할 수 있다.
-  - 함수의 반환값으로 사용할 수 있다.
-- 클래스 몸체에는 0개 이상의 메서드만 정의할 수 있다. 클래스 몸체에서 정의할 수 있는 메서드는 constructor(생성자), 프로토타입 메서드, 정적 메서드의 세가지가 있다.
-
-```jsx
-// 클래스 선언문
-class Person {
-  // 생성자
-  constructor(name) {
-    // 인스턴스 생성 및 초기화
-    this.name = name; // name 프로퍼티는 public하다.
-  }
-
-  // 프로토타입 메서드
-  sayHi() {
-    console.log(`Hi! My name is ${this.name}`);
-  }
-
-  // 정적 메서드
-  static sayHello() {
-    console.log("Hello");
-  }
+function Circle(radius) {
+	// 이 시점에는 생성자 함수 자신이 생성할 인스턴스를 가리키는 식별자를 알 수 없다.
+	???.radius = radius;
 }
+
+Circle.prototype.getDiameter = function () {
+	// 이 시점에는 생성자 함수 자신이 생성할 인스턴스를 가리키는 실별자를 알 수 없다.
+	return 2 * ???.radius;
+};
+
+// 생성자 함수로 인스턴스를 생성하려면 먼저 생성자 함수를 정의해야 한다.
+const circle = new Circle(5);
+```
+
+- 생성자 함수로 인스턴스를 생성하려면 먼저 생성자 함수가 존재해야 한다.
+- 생성자 함수를 정의하는 시점에는 아직 인스턴스를 생성하기 이전이므로 생성자 함수가 생성할 인스턴스를 가리키는 식별자를 알 수 없다. 따라서 자신이 속한 객체 또는 자신이 생성할 인스턴스를 가리키는 특수한 식별자가 필요하다. 이를 위해 자바스크립트는 this라는 특수한 식별자를 제공한다.
+- **this는 자신이 속한 객체 또는 자신이 생성할 인스턴스를 가리키는 자기 참조 변수다. this를 통해 자신이 속한 객체 또는 자신이 생성할 인스턴스의 프로퍼티나 메서드를 참조할 수 있다.**
+- this는 자바스크립트 엔진에 의해 암묵적으로 생성되며 코드 어디서든 참조할 수 있다.
+- **this가 가리키는 값 즉, this 바인딩은 함수 호출방식에 의해 동적으로 결정된다.**
+
+```jsx
+function Circle(radius) {
+  // this는 생성자 함수가 생성할 인스턴스를 가리킨다.
+  this.radius = radius;
+}
+
+Circle.prototype.getDiameter = function () {
+  // this는 생성자 함수가 생성할 인스턴스를 가리킨다.
+  return 2 * this.radius;
+};
 
 // 인스턴스 생성
-const me = new Person("Lee");
-
-// 인스턴스의 프로퍼티 참조
-console.log(me.naem); // Lee
-// 프로토타입 메서드 호출
-me.sayHi(); // Hi! My name is Lee
-// 정적 메서드 호출
-Person.sayHello(); // Hello!
+const circle = new Circle(5);
+console.log(circle.getDiameter()); // 10
 ```
 
-## 25.3 클래스 호이스팅
+- 생성자 함수 내분의 this는 생성자 함수가 생성할 인스턴스를 가리킨다. 이처럼 this는 상황에 따라 가리키는 대상이 다르다.
+- **자바스크립트의 this는 함수가 호출되는 방식에 따라 this에 바인딩될 값, 즉 this 바인딩이 동적으로 결정된다.**
 
-```jsx
-// 클래스 선언문
-class Person {}
-
-console.log(typeof Person); // function
-```
-
-- 클래스 선언문으로 정의한 클래스는 함수 선언문과 같이 소스코드 평가 과정, 즉 런타임 이전에 먼저 평가되어 함수 객체를 생성한다. 이때 클래스가 평가되어 생성된 함수 객체는 생성자 함수로서 호출할 수 있는 함수 즉 constructor다. 생성자 함수로서 호출할 수 있는 함수는 함수 정의가 평가되어 함수 객체를 생성하는 시점에 프로토타입도 더불처 생성된다.
-
-```jsx
-console.log(Person);
-// ReferenceError
-
-// 클래스 선언문
-class Person {}
-```
-
-- 클래스 선언문은 마치 호이스팅이 발생하지 않는 것처럼 보이나 그렇지 않다.
-
-```jsx
-const Person = "";
-
-{
-  // 호이스팅이 발생하지 않는다면 ''이 호출되어야 한다.
-  console.log(Person);
-  // ReferenceError: Canot access 'Person' before initialization
-
-  // 클래스 선언문
-  class Person {}
-}
-```
-
-- 클래스 선언문도 변수 선언, 함수 정의와 마찬가지로 호이스팅이 발생한다. 단 클래스는 let, const 키워드로 선언한 변수처럼 호이스팅이된다. 따라서 클래스 선언문 이전에 일시적 사각지대에 빠지기 떄문에 호이스팅이 발생하지 않는 것처럼 동작한다.
-
-## 25.4 인스턴스 생성
+## 22.2 함수 호출방식과 this 바인딩
 
 <aside>
-📌 클래스는 생성자 함수이며 new 연산자와 함꼐 호출되어 인스턴스를 생성한다.
+📌 **this 바인딩(this에 바인딩될 값)은 함수 호출 방식, 즉 함수가 어떻게 호출되었는지에 따라 동적으로 결정된다.**
+
+</aside>
+
+### 함수 호출 방식
+
+- 일반함수로 호출
+- 메서드 호출
+- 생성자 함수 호출
+- Function.prototype.apply/call/bind에 메서드에 의한 간접 호출
+
+### 22.2.1 일반 함수 호출
+
+<aside>
+📌 기본적으로 this에는 전역 객체가 바인딩된다.
 
 </aside>
 
 ```jsx
-class Person {}
-
-// 인스턴스 생성
-const me = new Person();
-console.log(me); // Person {}
-```
-
-- 함수는 new 연산자의 사용 여부에 따라 일반함수로 호출되거나 인스턴스 생성을 위한 생성자 함수로 호출되지만 클래스는 인스턴스를 생성하는 것이 유일한 존재 이유이므로 반드시 new연산자와 함께 호출해야 한다.
-
-```jsx
-class Person {}
-
-// 클래스를 new 연산자 없이 호출하면 타입 에러가 발생한다.
-const me = Person();
-// TypeError
-```
-
-## 25.5 메서드
-
-<aside>
-📌 클래스 몸체에는 0개 이상의 메서드만 선언할 수 있다. 클래스 몸체에서 정의할 수 있는 메서드는 constructor(생성자), 프로토타입 메서드, 정적 메서드의 세 가지가 있다.
-
-</aside>
-
-### 25.5.1 constructor
-
-<aside>
-📌 constructor는 인스턴스를 생성하고 초기화하기 위한 특수한 메서드다. constructor는 이름을 변경할 수 없다.
-
-</aside>
-
-```jsx
-class Person {
-  // 생성자
-  constructor(name) {
-    // 인스턴스 생성 및 초기화
-    this.name = name;
+function foo() {
+  console.log("foo's this: ", this); // window
+  function bar() {
+    console.log("bar's this: ", this); // window
   }
+  bar();
 }
+foo();
 ```
 
-- 클래스는 인스턴스를 생성하기 위한 생성자 함수다. 클래스의 내부를 들여다보자
-- 클래스는 평가되어 함수 객체가 된다. 함수와 동일하게 프로토타입과 연결되어 있으며 자신의 스코프체인을 구성한다.
-- 모든 함수 객체가 가지고 있는 prototype 프로퍼티가 가리키는 프로토타입 객체의 constructor 프로퍼티는 클래스 자신을 가리키고 있다. 이는 클래스가 인스턴스를 생성하는 생성자 함수라는 것을 의미한다.
+- 전역 함수는 물론이고 중첩 함수를 **일반 함수로 호출하면 함수 내부의 this에는 전역 객체가 바인딩 된다.**
+- 콜백 함수가 일반 함수로 호출된다면 콜백 함수 내부의 this에도 전역 객체가 바인딩 된다. 어떠한 함수라도 일반 함수로 호출되면 this에 전역 객체가 바인딩된다.
 
 ```jsx
-// 클래스
-class Person {
-  // 생성자
-  constructor(name) {
-    // 인스턴스 생성 및 초기화
-    this.name = name;
-  }
-}
+var value = 1;
 
+const obj = {
+  value: 100,
+  foo() {
+    console.log("foo's this: ", this); // {value: 100, foo: f}
+    // 콜백 함수 내부의 this에는 전역 객체가 바인딩된다.
+    setTimeout(function () {
+      console.log("callback's this: ", this); // window
+      console.log("callback's this.value: ", this.value); // 1
+    }, 100);
+  },
+};
+
+obj.foo();
+```
+
+- **이처럼 일반 함수로 호출된 모든 함수(중첩 함수, 콜백 함수 포함) 내부의 this에는 전역 객체가 바인딩된다.**
+- 하지만 외부 함수인 메서드와 중첩 함수 또는 콜백 함수 this가 일치하지 않는다는 것은 중첩 함수 또는 콜백함수를 헬퍼 함수로 동작하기 어렵게 만든다.
+- 메서드 내부의 중첩 함수나 콜백함수의 this바인딩을 메서드의 this 바인딩과 일치시키기 위한 방법은 다음과 같다.
+
+```jsx
+var value = 1;
+
+const obj = {
+  value: 100,
+  foo() {
+    // this 바인딩(obj)을 변수 that에 할당한다.
+    const taht = this;
+
+    // 콜백 함수 내부에서 this 대신 that을 참조한다.
+    setTimeout(function () {
+      console.log(that.value); // 100
+    }, 100);
+  },
+};
+
+obj.foo();
+```
+
+```jsx
+var value = 1;
+
+const obj = {
+  value: 100,
+  foo() {
+    // 콜백 함수에 명시적으로 this를 바인딩한다.
+    setTimeout(
+      function () {
+        console.log(this.value); // 100
+      }.bind(this),
+      100
+    );
+  },
+};
+
+obj.foo();
+```
+
+### 22.2.2 메서드 호출
+
+<aside>
+📌 메서드 내부의 this에는 메서드를 호출한 객체, 즉 메서드를 호출할 때 메서드 이름 앞의 마침표(.) 연선자 앞에 기술한 객체가 바인딩된다. 주의할 것은 메서드 내부의 this는 메서드를 소요한 객체가 아닌 메서드를 호출한 객체에 바인딩된다는 것이다.
+
+</aside>
+
+```jsx
+const person = {
+  name: "Lee",
+  getName() {
+    // 메서드 내부의 this는 메서드를 호출한 객체에 바인딩된다.
+    return this.name;
+  },
+};
+
+// 메서드 getName을 호출한 객체는 parson이다.
+console.log(person.getName()); // Lee
+```
+
+- person 객체의 getName 프로퍼티가 가리키는 함수 객체는 person객체에 포함된 것이 아니라 독립적으로 존재하는 별도의 객체다. getName 프로퍼티가 함수 객체를 가리키고 있을 뿐이다.
+- 따라서 getName 프로퍼티가 가리키는 함수 객체, 즉 getName 메서드는 다른 객체의 프로퍼티에 할당하는 것으로 다른 객체의 메서드가 될 수도 있고 일반 변수에 할당하여 일반 함수로 호출될 수도 있다.
+
+```jsx
+const anotherPerson = {
+  name: "Kim",
+};
+
+// getName 메서드를 anotherperson 객체의 메서드로 할당
+anotherPerson.getName = person.getName;
+
+// getName 메서드를 호출한 객체는 anotherPerson이다.
+console.log(anotherPerson.getName()); // Kim
+
+// getName 메서드를 변수에 할당
+const getName = person.getName;
+
+// getName 메서드를 일반 함수로 호출
+console.log(getName()); // ''
+// 일반 함수로 호출된 getName 함수 내부의 this.name은 브라우저 환경에서 window.name과 같다.
+// 브라우저 환경에서 window.name은 브라우저 창의 이름을 나타내는 빌트인 프로퍼티이며 기본값은 ''이다.
+// Node.js환경에서 this.name은 undefined다.
+```
+
+- 따라서 메서드 내부의 this는 프로퍼티로 메서드를 가리키고 있는 객체와는 관계가 없고 메서드를 호출한 객체에 바인딩된다.
+- 프로토타입 메서드 내부에 사용된 this도 일반 메서드와 마찬가지로 해당 메서드를 호출한 객체에 바인딩 된다.
+
+### 22.2.3 생성자 함수 호출
+
+<aside>
+📌 생성자 함수 내부의 this에는 생성자 함수가 생성할 인스턴스가 바인딩 된다.
+
+</aside>
+
+```jsx
 // 생성자 함수
-function Person(name) {
-  // 인스턴스 생성 및 초기화
-  this.name = name;
+function Circle(radius) {
+  // 생성자 함수 내부의 this는 생성자 함수가 생성할 인스턴스를 가리킨다.
+  this.radius = radius;
+  this.getDimeter = function () {
+    return 2 * this.radius;
+  };
 }
+
+// 반지름이 5인 Circle 객체를 생성
+const circle1 = new Circle(5);
+// 반지름이 10인 Circle 객체를 생성
+const circle2 = new Circle(10);
+
+console.log(circle1.getDiameter()); // 10
+console.log(circle2.getDiameter()); // 20
 ```
 
-- 클래스가 생성한 인스턴스 어디에도 constructor 메서드가 보이지 않는다. 이는 클래스 몸체에 정의한 constructor가 단순한 메서드가 아니라는 것을 의미한다.
-- constructor는 메서드로 해석되는 것이 아니라 클래스가 평가되어 생성한 함수 객체 코드의 일부가 된다. 다시말해 클래스 정의가 평가되면 construcotr의 기술된 동작을 하는 함수 객체가 생성된다.
-- constructor는 생성자 함수와 유사하지만 몇 가지 차이가 있다.
-- constructor는 클래스 내에 최대 한 개만 존재할 수 있다. 만약 클래스가 2개 이상의 constructor를 포함하면 문법 에러가 발생한다.
-  ㄴ
+```jsx
+// new 연산자와 함께 호출하지 않으면 생성자 함수로 동작하지 않는다. 즉, 일반적인 함수의 호출이다.
+const circle3 = CIrcle(1);
+
+// 일반 함수로 호출된 Circle에는 반환문이 없으므로 암묵적으로 undefined를 반환한다.
+console.log(circcle3); // undefined
+
+// 일반 함수로 호출된 Circle 내부의 this는 전역 객체를 가리킨다.
+console.log(radius); // 15
+```
+
+### 22.2.4 Function.prototype.apply/call/bind 메서드에 의한 간접 호출
+
+- apply, call, bind 메서드는 Function.prototype의 메서드다. 즉, 이들 메서드는 모든 함수가 상속받아 사용할 수 있다.
+
+```jsx
+function getThisBinding() {
+  return this;
+}
+
+// this로 사용할 객체
+const thisArg = { a: 1 };
+
+console.log(getThisBinding()); // window
+
+// getThisBinding 함수를 호출하면서 인수로 전달한 객체를 getThisBinding 함수의 this에 바인딩한다.
+console.log(getThisBinding.apply(thisArg)); // {a: 1}
+console.log(getThisBinding.call(thisArg)); // {a: 1}
+```
+
+- **apply와 call 메서드의 본질적인 기능은 함수를 호출하는 것이다.**
+- apply와 call 메서드는 함수를 호출하면서 첫 번째 인수로 전달한 특정 객체를 호출한 함수의 this에 바인딩한다.
+- apply와 call 메서드는 호출한 함수에 인수를 전달하는 방식만 다를 뿐 동일하게 동작한다.
