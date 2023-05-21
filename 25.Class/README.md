@@ -13,10 +13,11 @@
   5. 클래스의 constructor, 프로토타입 메서드 정적 메서드는 모두 프로퍼티 어트리뷰트 [[Enumerable]]의 값이 false다. 다시말해 열거되지 않는다.
 - 클래스는 생성자 함수 기반의 객체 생성 방식보다 견고하고 명료하다. 따라서 클래스를 프로토타입 기반 객체생성 패턴의 단순한 문법적 설탕이라고 보기보다는 새로운 객체 생성 메커니즘으로 보는 것이 좀더 합당하다.
 
-## 25.2 클래싀 정의
+## 25.2 클래스 정의
 
 <aside>
 📌 클래스는 class키워드를 사용하여 정의한다. 클래스 이름은 생성자 함수와 마찬가지로 파스칼 케이스를 사용하는 것이 일반적이다. 파스칼 케이스를 사용하지 않아도 에러가 발생하지 않는다.
+
 </aside>
 
 ```jsx
@@ -182,3 +183,44 @@ function Person(name) {
 - constructor는 메서드로 해석되는 것이 아니라 클래스가 평가되어 생성한 함수 객체 코드의 일부가 된다. 다시말해 클래스 정의가 평가되면 construcotr의 기술된 동작을 하는 함수 객체가 생성된다.
 - constructor는 생성자 함수와 유사하지만 몇 가지 차이가 있다.
 - constructor는 클래스 내에 최대 한 개만 존재할 수 있다. 만약 클래스가 2개 이상의 constructor를 포함하면 문법 에러가 발생한다.
+
+### 25.5.2 프로토타입 메서드
+
+생성자 함수를 사용하여 인스턴스를 생성하는 경우 프로토타입 메서드를 생성하기 위해서는 다음과 같이 명시적으로 프로토타입에 메서드를 추가해야한다.
+
+```jsx
+// 생성자 함수
+function Person(name) {
+  this.name = name;
+}
+
+// 프로토타입 메서드
+Person.prototype.sayHi = function () {
+  console.log(`Hi! My name is ${this.name}`);
+};
+
+const me = new Person("Lee");
+me.sayHi(); // Hi! My name is Lee
+```
+
+- 클래스 몸체에서 정의한 메서드는 생성자 함수에 의한 객체 생성 방식과는 다르게 클래스의 prototype 프로퍼티에 메서들르 추가하지 않아도 기본적으로 프로토타입 메서드가 된다.
+
+```jsx
+class Person {
+  // 생성자
+  constructor(name) {
+    // 인스턴스 생성 및 초기화
+    this.name = name;
+  }
+
+  // 프로토타입 메서드
+  sayHi() {
+    console.log(`Hi! My name is ${this.name}`);
+  }
+}
+
+const me = new Person("Lee");
+me.sayHi(); // Hi! My name is Lee
+```
+
+### 25.5.3 정적 메서드
