@@ -413,4 +413,133 @@ console.log(me.#name);
 - public필드는 어디서든 참조할 수 있지만 private 필드는 클래스 내부에서만 참조할 수 있다.
 - 이처럼 클래스 외부에서 private 필드에 직접 접근할 수 있는 방법은 없다. 다만 접근자 프로퍼티를 통해 간접적으로 접근하는 방법은 유효하다.
 
-### 25.7.5 statuc필드 정의 제안
+### 25.8 상속에 의한 클래스 확장
+
+<aside>
+📌 상속에 의한 클래스 확장은 기존 클래스를 상속받아 새로운 클래스를 확장하여 정의하는 것이다.
+
+</aside>
+
+- 클래스는 상속을 통해 기존 클래스를 확장할 수 있는 문법이 기본적으로 제공되지만 생성자 함수는 그렇지 않다.
+
+### 25.8.2 extends 키워드
+
+<aside>
+📌 상속을 통해 클래스를 확장하려면 extends 키워드를 사용하여 상속받을 클래스를 정의한다.
+
+</aside>
+
+```jsx
+// 수퍼 클래스
+class Base {}
+
+// 서브 클래스
+class Derived extends Base {}
+```
+
+- 상속을 통해 확장된 클래스를 서브클래스라고 부르고, 서브클래스에게 상속된 클래스를 수퍼클래스라 부른다.
+- extends 키워드의 역할은 수퍼클래스와 서브클래스 간의 상속 관계를 설정하는 것이다. 클래스도 프로토타입을 통해 상속 관계를 구현한다.
+
+  25.8.3 동적 상속
+
+- extends 키워드는 클래스뿐만 아니라 생성자 함수를 상속받아 클래스를 확장할 수도 있다.
+- extends 키워드 다음에는 클래스뿐만 아니라 [[Construct]] 내부 메서드를 갖는 함수 객체로 평가될 수 있는 모든 표현식을 사용할 수 있다. 이를 통해 동적으로 상속받을 대상을 결정할 수 있다.
+
+```jsx
+function Base1() {}
+
+class Base2 {}
+
+let condition = true;
+
+class Derived extends (condition ? Base1 : Base2) {}
+
+const derived = new Derived();
+console.log(derived); // Derived {}
+
+console.log(derived instanceof Base1); // true
+console.log(derived instanceof Base2); // false
+```
+
+### 25.8.4 서브클래스의 constructor
+
+- 서브클래스에서 constructor를 생략하면 클래스에 다음 같은 constructor가 암묵적으로 정의된다. args는 new 연산자와 함꼐 클래스를 호출할 때 전달한 인수의 리스트다.
+
+```jsx
+class Base {
+	constructor() {}
+}
+
+// 서브클래스
+class Derived extends Base {
+	constructor(...args) { super(...args); }
+}
+
+const derived = new Derived();
+console.log(derived); Derived {}
+```
+
+- 수퍼클래스와 서브클래스 모두 constructor를 생략하면 빈 객체가 생성된다. 프로퍼티를 소유하는 인스턴스를 생성하려면 constructor 내부에서 인스턴스에 프로퍼티를 추가해야한다.
+
+### 25.8.5 super 키워드
+
+<aside>
+📌 super 키워드는 함수처럼 호출할 수도 있고 this와 같이 식별자처럼 참조할 수 있는 특수한 키워드다.
+
+</aside>
+
+- super를 호출하면 수퍼클래스의 constructor를 호출한다.
+- super를 참조하면 수퍼클래스의 메서드를 호출할 수 있다.
+
+### super 호출
+
+- **super를 호출하면 수퍼클래스의 constructor를 호출한다.**
+- new연산자와 함께 서브클래스를 호출하면 전달한 인수는 모두 서브클래스에 암묵적으로 정의된 constructor의 super 호출을 통해 수퍼클래스의 constructor에 전달된다.
+
+```jsx
+// 수퍼클래스
+class Base {
+  constructor(a, b) {
+    this.a = a;
+    this.b = b;
+  }
+}
+
+// 서브클래스
+class Derived extends Base {
+  // 다음과 같이 암묵적으로 constructor가 정의된다.
+  // constructor(...args){ super(...args); }
+}
+
+const derived = new Derived(1, 2);
+console.log(derived); // Derived {a: 1, b: 2}
+```
+
+- new연산자와 함꼐 서브클래스를 호출하면서 전달한 인수 중에서 수퍼클래스의 constructor에 전달할 필요가 있는 인수는 서브클래스 constructor에서 호출하는 super를 통해 전달한다.
+- super를 호출할 떄 주의할 사항은 다음과 같다.
+  1. 서브클래스에서 constructor를 생략하지 않는 경우 서브클래스의 constructor에는 반드시 super를 호출해야한다.
+  2. 서브클래스의 constructor에서 super를 호출하기 전에는 this를 참조할 수 없다.
+  3. super는 반드시 서브클래스의 constructor에서만 호출한다. 서브클래스가 아닌 클래스의 constructor난 함수에서 super를 호출하면 에러가 발생한다.
+
+### super 참조
+
+**메서드 내에서 super를 참조하면 수퍼클래스의 메서드를 호출할 수 있다.**
+
+1. 서브클래스의 프로토타입 메서드 내에서 super.sayHi는 수퍼클래스의 프로토타입 메서드 sayHi를 가리킨다.
+   - super는 자신을 참조하고 있는 메서드가 바인딩되어 있는 객체의 프로토타입을 가리킨다.
+   - call 메서드를 사용해 this를 전달해야한다. 만약 call 메서드를 사용하지 않고 호출하면 Base.prototype.sayHi 메서드 내부의 this는 Base.prototype을 가리킨다.
+   - 이를 위해 메서드는 내부 슬롯 [[HomeObject]]를 가지며, 자신을 바인딩하고 있는 객체를 가리킨다.
+   - **주의할 것은 ES6의 메서드 축약 표현으로 정의된 함수만이 [[HomeObject]]를 갖는다는 것이다.**
+2. 서브클래스의 정적 메서드 내에서 super.sayHi는 수퍼클래스의 정적 메서드 sayHi를 가리킨다.
+
+### 25.8.6 상속 클래스의 인스턴스 생성과정
+
+1. **서브클래스의 super호출**
+   - 자바스크립트 엔진은 클래스를 평가할때 수퍼 클래스와 서브클래스를 구분하기 위해 base, derived 값으로 갖는 내부 슬롯을 갖는다. 상속 받지 않는 클래스 값은 base 상속 받는서브클래스는 내부 슬롯의 값이 derived다.
+   - **서브클래스는 자신이 직접 인스턴스를 생성하지 않고 수퍼클래스에게 인스턴스 생성을 위임한다. 이것이 바로 서브클래스의 constructor에서 반드시 super를 호출해야하는 이유다.**
+2. **수퍼클래스의 인스턴스 생성과 this 바인딩**
+   - 인스턴스는 수퍼클래스가 생성하는 것이다. 하지만 new 연산자와 함께 호출된 클래스가 서브클래스라는 것이 중요하다. 즉 new 연산자와 함께 호출된 함수를 가리키는 new.target은 서브클래스를 가리킨다. 따라서 **인스턴스는 new.target이 가리키는 서브클래스가 생성한 것으로 처리된다.**
+3. **수퍼클래스의 인스턴스초기화**
+4. **서브클래스 constructor로의 복귀와 this 바인딩**
+5. **서브클래스의 인스턴스 초기화**
+6. **인스턴스 반환**
