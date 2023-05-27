@@ -518,10 +518,8 @@ console.log(derived); // Derived {a: 1, b: 2}
 - new연산자와 함꼐 서브클래스를 호출하면서 전달한 인수 중에서 수퍼클래스의 constructor에 전달할 필요가 있는 인수는 서브클래스 constructor에서 호출하는 super를 통해 전달한다.
 - super를 호출할 떄 주의할 사항은 다음과 같다.
   1. 서브클래스에서 constructor를 생략하지 않는 경우 서브클래스의 constructor에는 반드시 super를 호출해야한다.
-  2. 서브클래스의 constructor에서 super를 호출하기 전에는 this를 참조할 수 없다\
-
-"[=]\
- 3. super는 반드시 서브클래스의 constructor에서만 호출한다. 서브클래스가 아닌 클래스의 constructor난 함수에서 super를 호출하면 에러가 발생한다.
+  2. 서브클래스의 constructor에서 super를 호출하기 전에는 this를 참조할 수 없다.
+  3. super는 반드시 서브클래스의 constructor에서만 호출한다. 서브클래스가 아닌 클래스의 constructor난 함수에서 super를 호출하면 에러가 발생한다.
 
 ### super 참조
 
