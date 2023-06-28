@@ -1,5 +1,3 @@
-# 39장 DOM
-
 <aside>
 📌 DOM은 HTML 문서의 계층적 구조와 정보를 표현하며 이를 제어할 수 있는 API 즉 프로퍼티와 메서드를 제공하는 트리 자료구조다.
 
@@ -216,3 +214,71 @@ $elems.forEach((elem) => (elem.clasName = "blue"));
 - 사용자로부터 입력받은 데이터를 그대로 innerHTML 프로퍼티에 할당하는 것은 크로스 사이트 스크립팅 공격에 취약하므로 위험하다.
 
 ### 39.6.2 insertAdjacentHTML 메서드
+
+- Element.prototype.insertAdjacentHTML 메서드는 기존 요소를 제거하지 않으면서 위치를 지정해 새로운 요소를 삽입한다.
+- 첫 번째 인수로 전달한 위치에 삽입하여 DOM에 반영한다. 첫 번째 인수로 전달할 수 있는 문자열인 ‘beforebegin’, ‘afterbegin’, ‘beforeend’, ‘afterend’의 4가지다.
+- insertAdjacentHTML메서드는 기존 요소에 영향을 주지 않고 새롭게 삽입될 요소만을 파싱하여 자식 요소로 추가하므로 기전의 자식 노드를 모두 제거하고 다시 처음부터 새롭게 자식 노드를 생성하여 자식 요소로 추가하는 innerHTML 프로퍼티보다 효율적이고 빠르다.
+
+### 39.6.3 노드 생성과 추가
+
+- 지금까지 살펴본 innerHTML 프로퍼티와 insertAdjacentHTML 메서드는 HTML 마크업 문자열을 파싱하여 노드를 생성하고 DOM에 반영한다. DOM은 노드를 직접 생성,삽입,삭제,치환하는 메서드도 제공한다.
+
+**요소 노드 생성**
+
+- Document.prototype.createElement(tagName) 메서드는 요소 노드를 생성하여 반환한다.
+- createElement 메서드는 요소 노드를 생성할 뿐 DOM에 추가하지는 않는다. 따라서 이후에 생성된 요소노드를 DOM에 추가하는 처리가 별도로 필요하다.
+
+**텍스트 노드 생성**
+
+- Document.prototype.createTextNode(text) 메서드는 텍스트 노드를 생성하여 반환한다.
+- 텍스트 노드는 요소 노드의 자식 노드다. 하지만 createTextNode 메서드로 생성한 텍스트 노드는 요소 노드의 자식 노드로 추가되지 않고 홀로 존재하는 상태다.
+- 즉, createTextNode 메서드와 마찬가지로 createTextNode 메서드는 텍스트 노드를 생성할 뿐 요소 노드에 추가하지는 않는다.
+
+**텍스트 노드를 요소 노드의 자식 노드로 추가**
+
+- Node.prototype.appendChild 메서드는 매개변수 childNode에게 인수로 전달한 노드를 appendChild 메서드를 호출한 노드의 마지막 자식 노드로 추가한다.
+
+**요도 노드를 DOM에 추가하기**
+
+- Node.prototype.appendChild 메서듭를 사용하여 텍스트 노드와 부자 관계로 연결한 요소 노드를 #fruits 요소 노드의 마지막 자식요소로 추가한다.
+- 이 과정에서 비로소 새롭게 생성한 요소 노드가 DOM에 추가된다. 기존 DOM에 요소 노드를 추가하는 처리는 이 과정뿐이다. 이때 리플로우 리페인트가 실행된다.
+
+### 39.6.4 복수의 노드 생성과 추가
+
+- 3개의 요소 노드를 생성하여 DOM에 3번 추가하면 DOM이 3번 변경된다. 이때 리블로우와 리페인트가 3번 실행된다. DOM을 변경하는 것은 높은 비용이 드는 처리이브로 가급적 횟수를 줄이는 편이 성능에 유리하다.
+- 이러한 문제는 DocumentFragment 노드를 통해 해결할 수 있다.
+- DocumentFragment 노드는 기존 DOM과는 별도로 존재하므로 DocumentFragment 노드에 자식 노드를 추가하여도 기존 DOM에는 어떠한 변경도 발생하지 않는다.
+- 또한 DocumentFragment노드를 DOM에 추가하면 자신은 제거되고 자신의 자식 노드만 DOM에 추가된다.
+
+### 39.6.5 노드 삽입
+
+**마지막 노드로 추가**
+
+- Node.prototype.appendChild 메서드는 인수로 전달받은 노드를 자신을 호출한 노드의 마지막 자식 노드로 DOM에 추가한다. 이때 노드를 추가할 위치를 지정할 수 없고 언제나 마지막 자식 노드로 추가한다.
+
+**지정한 위치에 노드삽입**
+
+- Node.prototype.insertBefore메서드는 첫 번째 인수로 전달받은 노드를 두 번째 인수로 전달받은 노드 앞에 삽입한다.
+- 두 번쨰 인수로 전달받은 노드는 반드시 insertBefore 메서드를 호출한 노드의 자식 노드이어야 한다. 그렇지 않으면 DOMException 에러가 발생한다.
+
+### 39.6.6 노드 이동
+
+- DOM에 이미 존재하는 노드를 appendChild 또는 insertBefore 메서드를 사용하여 DOM에 다시 추가하면 현재 위치에서 노드를 제거하고 새로운 위치에 노드를 추가한다.
+- 즉, 노드가 이동한다.
+
+### 39.6.7 노드 복사
+
+- Node.prototype.cloneNode 메서드는 노드의 사본을 생성하여 반환한다. 매개변수 deep에 true를 인수로 전달하면 노드를 깊은 복사하여 모든 자손 노드가 포함된 사본을 생성하고, flase를 인수로 전달하거나 생략하면 노드를 얕은 복사하여 노드 자신만의 사본을 생성한다.
+
+### 39.6.8 노드 교체
+
+- Node.prototype.replaceChild 메서드는 자신을 호출한 노드의 자식 노드를 다른 노드로 교체한다.
+- 즉, replaceChild 메서드는 자신을 호출한 노드의 자식 노드인 oldChild 노드를 newChild 노드로 교체한다. 이때 oldChild 노드는 DOM에서 제거된다.
+
+### 39.6.9. 노드 삭제
+
+- Node.prototype.removeChild 메서드는 child 매개변수에 인수로 전달한 노드를 DOM에서 삭제한다. 인수로 전달한 노드는 removeChild 메서드를 호출한 노드의 자식 노드이어야 한다.
+
+## 39.7 어트리뷰트
+
+### 39.7.1 어트리뷰트 노드와 attributes 프로퍼티
