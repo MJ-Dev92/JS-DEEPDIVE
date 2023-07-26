@@ -75,3 +75,66 @@ const xhr = new XMLHttpRequest();
   1. XMLHttpRequest.prototype.open 메서드로 HTTP 요청을 초기화한다.
   2. 필요에 따라 XMLHttpRequest.prototype.setRequestHeader 메서드로 특정 HTTP 요청의 헤더 값을 설정한다
   3. XMLHttpRequest.prototype.send 메서드로 HTTP 요청을 전송한다.
+
+```jsx
+// XMLHttpRequest 객체 생성
+const xhr = new XMLHttpRequest();
+
+// HTTP 요청 초기화
+xhr.open("GET", "/users");
+
+// HTTP 요청헤더 설정
+// 클라이언트가 서버로 전송할 데이터의 MIME 타입 지정 : json
+xhr.setRequestHeader("content-type", "application/json");
+
+// HTTP 요청 전송
+xhr.send();
+```
+
+**XMLHttpRequest.prototype.open**
+
+- open메서드는 서버에 전송할 HTTP요청을 초기화 함
+
+```jsx
+xhr.open(method, url[, async])
+```
+
+![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f8772d02-01ee-4952-84b2-38da9d9a5177/Untitled.png)
+
+- HTTP 요청 메서드는 클라이언트가 서버에게 요청의 종류와 목적을 알리는 방법
+
+![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/e7ae5025-b090-42b0-807c-08343a31e387/Untitled.png)
+
+### XMLHttpRequest.prototype.send
+
+- send메서드는 open메서드로 초기화된 HTTP요청을 서버에 전송함
+- GET요청일 경우, 데이터의 URL의 일부분인 쿼리 문자열로 서버에 전송함
+- POST요청일 경우, 데이터를 request body에 담아 전송함
+
+```jsx
+xhr.send(JSON.stringify({ id: 1, content: "HTML", completed: false }));
+```
+
+- 요청 메서드가 GET인 경우, send메서드에 페이로드로 전달된 인수는 무시되고 요청 몸체는 null로 설정됨
+
+### XMLHttpRequest.prototype.setRequestHeader
+
+- setRequestHeader메서드는 특정 HTTP요청의 헤더 값을 설정함
+- 반드시 open메서드를 호출한 이후에 호출해야 함
+- Content-type은 request body에 담아 전송할 데이터의 MIME타입의 정보를 표현함
+
+![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/fdc98129-7cae-4917-992c-84aab3987c6f/Untitled.png)
+
+```jsx
+xhr.setRequestHeader("content-type", "application/json");
+
+xhr.setRequestHeader("accept", "application/json");
+```
+
+- • Accept헤더를 설정하지 않으면 send메서드가 호출될 때 Accept헤더가 */*으로 전송된다.
+
+### **43.3.4 HTTP 응답 처리**
+
+- 이벤트 핸들러 프로퍼티 중에서 HTTP 요청의 현재 상태를 나타내는 readyState 프로퍼티 값이 변경된 경우 발생하는 readystatechange이벤트를 캐치해여 HTTP 응답을 처리할 수 있다.
+- XMLHttpRequest 객체는 브라우저에서 제공하는 WebAPI이므로 반드시 브라우저 환경에서 실행해야한다.
+- HTTP 요청에 대한 응답이 정상적으로 도착했다면 요청에 대한 응답 몸체에서 서버가 전송한 데이터를 취득한다. 200 or error
