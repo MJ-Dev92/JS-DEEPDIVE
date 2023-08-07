@@ -74,3 +74,60 @@ new Promise((_, reject) => reject(new Error("rejected"))).then(
 
 - then, catch, finally 후속 처리 메서드는 언제나 프로미스를 반환하므로 연속적으로 호출할 수 있다. 이를 프로미스 체이닝이라 한다.
 - 프로미스는 프로미스 체이닝을 통해 비동기 처리 결과를 전달받아 후속 처리를 하므로 비동기 처리를 위한 콜백 패턴에서 발생하던 콜백 헬이 발생하지 않는다.
+
+## 45.6 프로미스의 정적 메서드
+
+- Promise는 5가지 정적 메서드를 제공한다.
+
+### 45.6.1 promise.resolve / promise.reject
+
+- Promise.resolve와 Promise.reject 메서드는 이미 존재하는 값을 래핑하여 프로미스를 생성하기 위해 사용한다.
+
+### 45.6.2 Promise.all
+
+- Promise.all 메서드는 여러 개의 비동기 처리를 모두 병렬 처리할 때 사용한다.
+
+```jsx
+const requestData1 = () =>
+  new Promise((resolve) => setTimeout(() => resolve(1), 3000));
+const requestData2 = () =>
+  new Promise((resolve) => setTimeout(() => resolve(2), 2000));
+const requestData3 = () =>
+  new Promise((resolve) => setTimeout(() => resolve(3), 1000));
+```
+
+- Promise.all 메서드는 프로미스를 요소로 갖는 배열등의 이터러블을 인수로 전달받는다. 그리고 전달받은 모든 프로미스가 모두 fulfilled 상태가 되면 모든 처리 결과를 배열에 저장해 새로운 프로미스를 반환한다.
+- 첫 번째 프로미스가 resolve한 처리 결과부터 차례대로 배열에 저장해 그 배열을 resolve하는 새로운 프로미스를 반환한다. 즉, 처리 순서가 보장된다.
+
+### 45.6.3 Promise.race
+
+- Promise.race 메서드는 Promise.all 메서드처럼 모든 프로미스가 fulfilled 상태가 되는 것을 기다리는 것이 아니라 가장 먼저 fulfilled 상태가 된 프로미스의 처리 결과를 resolve하는 새로운 프로미스를 반환한다.
+- 프로미스가 rejected 상태가 되면 Promise.all 메서드와 동일하게 처리된다.
+- 즉, Promise.race메서드에 전달된 프로미스가 하나라도 rejected 상태가 되면 에러를 reject하는 새로운 프로미스를 즉시 반환한다.
+
+### 45.6.4 Promise.allSettled
+
+- Promise.allSettled 메서드는 프로미스를 요소로 갖는 배열 등의 이터러블을 인수로 전달받는다. 그리고 전달받은 프로미스가 모두 settled상태가 되면 처리 결과를 배열로 반환한다.
+- Promise.allSettled 메서드가 반환한 배열에는 fulfilled 또는 rejected 상태와는 상관없이 Promuse.allSettled 메서드가 인수로 전달받은 모든 프로미스들의 처리 결과가 모두 담겨 있다. 프로미스의 처리 결과를 나타내는 객체는 다음과 같다.
+  - 프로미스가 fulfilled 상태인 경우 비동기 처리 상태를 나타내는 status 프로퍼티와 처리 결과를 나타내는 value 프로퍼티를 갖는다.
+  - 프로미스가 rejected 상태인 경우 비동기 처리 상태를 나타내는 status 프로퍼티와 에러를 나타내는 reason프로퍼티를 갖는다.
+
+## 45.7 마이크로태스크 큐
+
+```jsx
+setTimeout(() => console.log(1), 0);
+
+Promise.resolve()
+	.then(() => console.log(2))
+	.then(() =? console.log(3));
+```
+
+- 프로미스의 후속 처리 메서드도 비동기로 동작하므로 1 → 2 → 3의 순으로 출력될 것처럼 보이지만 2 → 3 → 1 순으로 출력된다. 그 이유는 프로미스의 후속 처리 메서드의 콜백 함수는 태스크 큐가 아니라 마이크로태스크 큐에 저장되기 때문이다.
+- 마이크로태스크 큐는 태스크 큐보다 우선순위가 높다. 즉, 이벤트 루프는 콜 스택이 비면 먼저 마이크로태스크 큐에서 대기하고 있는 함수를 가져와 실행한다. 이후 마이크로태스크 큐가 비면 태스크 큐에서 대기하고 있는 함수를 가져와 실행한다.
+
+## 45.8 fetch
+
+- fatch 함수는 HTTP 요청 전송 기능을 제공하는 클라이언트 사이드 Web API다.
+- fetch 함수는 XMLHttpRequest 객체보다 사용법이 간단하고 프로미스를 지원하기 때문에 비동기 처리를 위한 콜백 패턴의 단점에서 자유롭다.
+- fetch 함수는 HTTP 응답을 나타내는 Response 객체를 래핑한 Promise 객체를 반환한다.
+- fetch 함수가 반환하는 프로미스는 오프라인 등의 네트워크 장애나 CORS 에러에 의해 요청이 완료되지 못한 경우에만 프로미스를 reject한다.
